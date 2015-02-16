@@ -8,7 +8,12 @@
 
 import UIKit
 
-class SecondViewController: UIViewController {
+class SecondViewController: UIViewController, UITextFieldDelegate {
+    //These are what storyboard connects the textboxes with.
+    // ! sets variable to default to null, for declaring something that doesnt exist at the moment.
+    @IBOutlet var txtTask: UITextField!
+    @IBOutlet var txtDesc: UITextField!
+   
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,6 +23,33 @@ class SecondViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    //Events
+    @IBAction func buttonAddTask_Click(sender: UIButton){
+        
+        taskMgr.addTask(txtTask.text, desc: txtDesc.text);
+        
+        
+        //close the keyboard
+        self.view.endEditing(true)
+        txtTask.text = ""
+        txtDesc.text = ""
+        
+        //take us back to the first tab
+        self.tabBarController?.selectedIndex = 0;
+    }
+    
+    
+    //IOS Touch Functions
+    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+        self.view.endEditing(true)
+    }
+    
+    //UITextFieldDelegate
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true;
     }
 
 
