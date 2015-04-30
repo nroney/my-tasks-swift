@@ -6,15 +6,63 @@
 //  Copyright (c) 2015 Nick Roney. All rights reserved.
 //
 
+//Map
+
 import UIKit
+import MapKit
 
-class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
-    @IBOutlet var tblTasks: UITableView!
+class FirstViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate {
+    
+    @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var theLabel: UILabel!
+    
+    var manager:CLLocationManager!
+    var myLocations: [CLLocation] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        //mapView.showsUserLocation = true
+        manager = CLLocationManager()
+        manager.requestAlwaysAuthorization()
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.startUpdatingLocation()
+        mapView.showsUserLocation = true
         // Do any additional setup after loading the view, typically from a nib.
+    }
+    
+    func locationManager(manager:CLLocationManager, didUpdateLocations locations:[AnyObject]) {
+        //theLabel.text = "\(locations[0])"
+        myLocations.append(locations[0] as CLLocation)
+        
+        let spanX = 0.007
+        let spanY = 0.007
+        var newRegion = MKCoordinateRegion(center: mapView.userLocation.coordinate, span: MKCoordinateSpanMake(spanX, spanY))
+        
+        mapView.setRegion(newRegion, animated: true)
+        
+        if (myLocations.count > 1){
+            var sourceIndex = myLocations.count - 1
+            var destinationIndex = myLocations.count - 2
+            
+            let c1 = myLocations[sourceIndex].coordinate
+            let c2 = myLocations[destinationIndex].coordinate
+            var a = [c1, c2]
+            var polyline = MKPolyline(coordinates: &a, count: a.count)
+            mapView.addOverlay(polyline)
+        }
+    }
+    
+    func mapView(mapView: MKMapView!, rendererForOverlay overlay: MKOverlay!) -> MKOverlayRenderer! {
+        
+        if overlay is MKPolyline {
+            var polylineRenderer = MKPolylineRenderer(overlay: overlay)
+            polylineRenderer.strokeColor = UIColor.blueColor()
+            polylineRenderer.lineWidth = 4
+            return polylineRenderer
+        }
+        return nil
     }
 
     override func didReceiveMemoryWarning() {
@@ -22,25 +70,11 @@ class FirstViewController: UIViewController, UITableViewDelegate, UITableViewDat
         // Dispose of any resources that can be recreated.
     }
     
-    //returning to view 
-    override func viewWillAppear(animated: Bool) {
-        tblTasks.reloadData()
+    @IBAction func zoomIn(sender: AnyObject) {
     }
     
     
-    //UITableViewDataSoruce
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int{
-        return taskMgr.tasks.count
+    @IBAction func changeMapType(sender: AnyObject) {
     }
-    
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell{
-        let cell: UITableViewCell = UITableViewCell(style: UITableViewCellStyle.Subtitle, reuseIdentifier: "test")
-        
-        cell.textLabel?.text  = taskMgr.tasks[indexPath.row].name
-        cell.detailTextLabel?.text = taskMgr.tasks[indexPath.row].desc
-        
-        return cell
-    }
-
 
 }
